@@ -1,0 +1,23 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.earthcomputer.litemoretica.mixin.client",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "HotkeysMixin",
+    "RayTraceUtilsMixin_ShapeContextFix",
+    "SchematicUtilsAccessor",
+    "WorldUtilsAccessor",
+    "WorldUtilsMixin_EasyPlaceFix"
+  ],
+  "client": [
+    "ClientPlayerInteractionManagerMixin_EasyPlaceFix"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  },
+  "plugin": "net.earthcomputer.litemoretica.mixin.LitemoreticaMixinPlugin"
+}

@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "litemoretica",
+  "version": "${version}",
+  "name": "litemoretica",
+  "description": "Adds extra features to litematica",
+  "authors": [
+    "Earthcomputer"
+  ],
+  "contact": {
+    "repo": "https://github.com/Earthcomputer/litemoretica"
+  },
+  "license": "MIT",
+  "icon": "assets/litemoretica/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "net.earthcomputer.litemoretica.client.LitemoreticaClient"
+    ],
+    "main": [
+      "net.earthcomputer.litemoretica.Litemoretica"
+    ]
+  },
+  "mixins": [
+    "litemoretica.client.mixins.json"
+  ]
+}
