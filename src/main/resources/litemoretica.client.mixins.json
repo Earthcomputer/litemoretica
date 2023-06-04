@@ -5,6 +5,8 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "HotkeysMixin",
+    "PlacementHandlerAccessor",
+    "PlacementHandlerMixin_EasyPlaceProtocol",
     "RayTraceUtilsMixin_ShapeContextFix",
     "SchematicUtilsAccessor",
     "WorldUtilsAccessor",

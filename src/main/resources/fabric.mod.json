@@ -18,10 +18,11 @@
       "net.earthcomputer.litemoretica.client.LitemoreticaClient"
     ],
     "main": [
-      "net.earthcomputer.litemoretica.Litemoretica"
+      "net.earthcomputer.litemoretica.server.LitemoreticaServer"
     ]
   },
   "mixins": [
-    "litemoretica.client.mixins.json"
+    "litemoretica.client.mixins.json",
+    "litemoretica.server.mixins.json"
   ]
 }
