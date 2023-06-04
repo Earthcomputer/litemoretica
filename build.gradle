@@ -1,10 +1,21 @@
 plugins {
     id 'fabric-loom' version '1.2-SNAPSHOT'
+    id 'com.modrinth.minotaur' version '2.+'
     id 'maven-publish'
 }
 
 version = project.mod_version
 group = project.maven_group
+
+modrinth {
+    token = project.hasProperty('modrinthKey') ? modrinthKey : null
+    projectId = 'litemoretica'
+    uploadFile = remapJar
+    gameVersions.set(project.modrinth_compatible_versions.split(',').toList())
+    loaders.set(['fabric', 'quilt'])
+    def changelogFile = file('changelog.txt')
+    changelog = changelogFile.exists() ? changelogFile.text : ''
+}
 
 repositories {
     maven { url "https://www.cursemaven.com" }
