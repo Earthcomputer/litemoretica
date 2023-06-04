@@ -3,12 +3,14 @@ package net.earthcomputer.litemoretica.client;
 import com.google.common.collect.ImmutableSet;
 import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.util.PlacementHandler;
+import io.netty.buffer.Unpooled;
 import net.earthcomputer.litemoretica.mixin.client.PlacementHandlerAccessor;
 import net.earthcomputer.litemoretica.network.InitEasyPlaceProtocolPacket;
 import net.earthcomputer.litemoretica.network.SetEasyPlaceProtocolPacket;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.state.property.Property;
 
 public final class EasyPlaceProtocolClient {
@@ -19,14 +21,17 @@ public final class EasyPlaceProtocolClient {
     }
 
     public static void init() {
-        ClientPlayNetworking.registerGlobalReceiver(InitEasyPlaceProtocolPacket.TYPE, (packet, player, responseSender) -> {
+        ClientPlayNetworking.registerGlobalReceiver(InitEasyPlaceProtocolPacket.TYPE, (client, handler, buf, responseSender) -> {
+            InitEasyPlaceProtocolPacket packet = new InitEasyPlaceProtocolPacket(buf);
             MinecraftClient.getInstance().execute(() -> {
                 PlacementHandlerAccessor.setWhitelistedProperties(packet.whitelistedProperties());
             });
         });
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
             if (ClientPlayNetworking.canSend(SetEasyPlaceProtocolPacket.TYPE)) {
-                sender.sendPacket(new SetEasyPlaceProtocolPacket(getEasyPlaceProtocol()));
+                PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+                new SetEasyPlaceProtocolPacket(getEasyPlaceProtocol()).write(buf);
+                sender.sendPacket(SetEasyPlaceProtocolPacket.TYPE, buf);
                 serverHasV3Protocol = true;
             }
         });
@@ -37,7 +42,9 @@ public final class EasyPlaceProtocolClient {
 
         Configs.Generic.EASY_PLACE_PROTOCOL.setValueChangeCallback(config -> {
             if (ClientPlayNetworking.canSend(SetEasyPlaceProtocolPacket.TYPE)) {
-                ClientPlayNetworking.send(new SetEasyPlaceProtocolPacket(getEasyPlaceProtocol()));
+                PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+                new SetEasyPlaceProtocolPacket(getEasyPlaceProtocol()).write(buf);
+                ClientPlayNetworking.send(SetEasyPlaceProtocolPacket.TYPE, buf);
             }
         });
     }

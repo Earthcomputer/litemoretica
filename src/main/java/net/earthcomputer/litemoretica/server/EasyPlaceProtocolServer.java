@@ -2,6 +2,7 @@ package net.earthcomputer.litemoretica.server;
 
 import com.google.common.collect.ImmutableSet;
 import com.mojang.logging.LogUtils;
+import io.netty.buffer.Unpooled;
 import net.earthcomputer.litemoretica.network.InitEasyPlaceProtocolPacket;
 import net.earthcomputer.litemoretica.network.SetEasyPlaceProtocolPacket;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
@@ -10,6 +11,7 @@ import net.minecraft.block.BedBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.enums.SlabType;
 import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.state.property.Properties;
@@ -69,10 +71,14 @@ public final class EasyPlaceProtocolServer {
     public static void init() {
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             if (ServerPlayNetworking.canSend(handler, InitEasyPlaceProtocolPacket.TYPE)) {
-                sender.sendPacket(new InitEasyPlaceProtocolPacket(WHITELISTED_PROPERTIES));
+                // TODO: convert these packets to new API in 1.20
+                PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+                new InitEasyPlaceProtocolPacket(WHITELISTED_PROPERTIES).write(buf);
+                sender.sendPacket(InitEasyPlaceProtocolPacket.TYPE, buf);
             }
         });
-        ServerPlayNetworking.registerGlobalReceiver(SetEasyPlaceProtocolPacket.TYPE, (packet, player, responseSender) -> {
+        ServerPlayNetworking.registerGlobalReceiver(SetEasyPlaceProtocolPacket.TYPE, (server, player, handler, buf, responseSender) -> {
+            SetEasyPlaceProtocolPacket packet = new SetEasyPlaceProtocolPacket(buf);
             player.server.execute(() -> {
                 LOGGER.info("Player {} is using easy place protocol {}", player.getEntityName(), packet.protocol());
                 ((NetworkHandlerExt) player.networkHandler).litemoretica_setEasyPlaceProtocol(packet.protocol());
