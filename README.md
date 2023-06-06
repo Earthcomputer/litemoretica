@@ -10,3 +10,4 @@ This mod should be installed alongisde Litematica.
 
 You can install Litemoretica on the server for additional features. This does *not* require Litematica on the server, but *does* require it on the client.
 - Easy place protocol version 3. Correct placement of more blocks than version 2, such as hoppers and buttons.
+- Fast and accurate pasting of schematics in multiplayer
