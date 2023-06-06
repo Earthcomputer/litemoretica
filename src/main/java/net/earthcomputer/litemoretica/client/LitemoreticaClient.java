@@ -6,13 +6,15 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 
 public class LitemoreticaClient implements ClientModInitializer {
+    public static final boolean HAS_NETWORKING = FabricLoader.getInstance().isModLoaded("fabric-networking-api-v1");
+
     @Override
     public void onInitializeClient() {
         InitializationHandler.getInstance().registerInitializationHandler(() -> {
             LitemoreticaHotkeys.addCallbacks(MinecraftClient.getInstance());
         });
 
-        if (FabricLoader.getInstance().isModLoaded("fabric-networking-api-v1")) {
+        if (HAS_NETWORKING) {
             EasyPlaceProtocolClient.init();
         }
     }

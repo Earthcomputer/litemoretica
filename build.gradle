@@ -18,7 +18,21 @@ modrinth {
 }
 
 repositories {
-    maven { url "https://www.cursemaven.com" }
+    maven {
+        name = 'CurseMaven'
+        url = 'https://www.cursemaven.com'
+        content {
+            includeGroup 'curse.maven'
+        }
+    }
+
+    maven {
+        name = 'Modrinth'
+        url = 'https://api.modrinth.com/maven'
+        content {
+            includeGroup 'maven.modrinth'
+        }
+    }
 }
 
 dependencies {
@@ -31,6 +45,7 @@ dependencies {
     modImplementation fabricApi.module('fabric-networking-api-v1', project.fabric_api_version)
     modImplementation "curse.maven:malilib-${project.masa_minecraft_version}-303119:${project.malilib_fileid}"
     modImplementation "curse.maven:litematica-${project.masa_minecraft_version}-308892:${project.litematica_fileid}"
+    modImplementation "maven.modrinth:carpet:${project.carpet_version}"
 }
 
 processResources {

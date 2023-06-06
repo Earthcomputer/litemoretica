@@ -8,6 +8,7 @@ public class LitemoreticaServer implements ModInitializer {
     public void onInitialize() {
         if (FabricLoader.getInstance().isModLoaded("fabric-networking-api-v1")) {
             EasyPlaceProtocolServer.init();
+            PasteHandlerServer.init();
         }
     }
 }

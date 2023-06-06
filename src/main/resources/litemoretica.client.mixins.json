@@ -8,12 +8,14 @@
     "PlacementHandlerAccessor",
     "PlacementHandlerMixin_EasyPlaceProtocol",
     "RayTraceUtilsMixin_ShapeContextFix",
+    "SchematicPlacementManagerMixin_PasteHandler",
     "SchematicUtilsAccessor",
     "WorldUtilsAccessor",
     "WorldUtilsMixin_EasyPlaceFix"
   ],
   "client": [
-    "ClientPlayerInteractionManagerMixin_EasyPlaceFix"
+    "ClientPlayerInteractionManagerMixin_EasyPlaceFix",
+    "ClientPlayNetworkHandlerMixin_PacketSplitter"
   ],
   "injectors": {
     "defaultRequire": 1
