@@ -164,7 +164,7 @@ public final class EasyPlaceProtocolServer {
             facing = Direction.byId(decodedFacingIndex);
 
             if (!property.getValues().contains(facing)) {
-                facing = context.getHorizontalPlayerFacing().getOpposite();
+                facing = context.getPlayerFacing().getOpposite();
             }
         }
 

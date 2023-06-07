@@ -215,7 +215,7 @@ public class PasteHandlerClient extends TaskPasteSchematicPerChunkBase {
                         regionPosTransformed.getX() + placementMain.getOrigin().getX(),
                         regionPosTransformed.getY() + placementMain.getOrigin().getY(),
                         regionPosTransformed.getZ() + placementMain.getOrigin().getZ());
-                if (box.containsPos(BlockPos.ofFloored(entityPos))) {
+                if (box.containsPos(new BlockPos(entityPos))) {
                     NbtCompound entityTag = info.nbt.copy();
                     NBTUtils.writeEntityPositionToTag(entityPos, entityTag);
                     if (entityTag.contains("TileX", NbtElement.NUMBER_TYPE)) {

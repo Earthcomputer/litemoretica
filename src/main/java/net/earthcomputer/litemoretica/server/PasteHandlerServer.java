@@ -78,11 +78,11 @@ public final class PasteHandlerServer {
             int z = blockEntity.getInt("z");
             blockEntity.remove("id");
 
-            if (!box.contains(x, y, z)) {
+            if (!box.contains(pos.set(x, y, z))) {
                 continue;
             }
 
-            BlockEntity be = world.getBlockEntity(pos.set(x, y, z));
+            BlockEntity be = world.getBlockEntity(pos);
             if (be != null) {
                 be.readNbt(blockEntity);
             }

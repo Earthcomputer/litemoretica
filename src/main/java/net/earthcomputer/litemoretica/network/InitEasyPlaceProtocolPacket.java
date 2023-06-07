@@ -3,9 +3,9 @@ package net.earthcomputer.litemoretica.network;
 import com.google.common.collect.ImmutableSet;
 import net.minecraft.block.Block;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.registry.Registries;
 import net.minecraft.state.property.Property;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.Registry;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -26,7 +26,7 @@ public record InitEasyPlaceProtocolPacket(ImmutableSet<Property<?>> whitelistedP
         ImmutableSet.Builder<Property<?>> properties = ImmutableSet.builderWithExpectedSize(numProperties);
         for (int i = 0; i < numProperties; i++) {
             Identifier blockId = buf.readIdentifier();
-            Block block = Registries.BLOCK.get(blockId);
+            Block block = Registry.BLOCK.get(blockId);
             String propertyName = buf.readString(256);
             Property<?> property = block.getStateManager().getProperty(propertyName);
             if (property != null) {
@@ -39,10 +39,10 @@ public record InitEasyPlaceProtocolPacket(ImmutableSet<Property<?>> whitelistedP
     private static void writeWhitelistedProperties(PacketByteBuf buf, ImmutableSet<Property<?>> whitelistedProperties) {
         buf.writeVarInt(whitelistedProperties.size());
         Set<Property<?>> propertiesToWrite = new HashSet<>(whitelistedProperties);
-        for (Block block : Registries.BLOCK) {
+        for (Block block : Registry.BLOCK) {
             for (Property<?> property : block.getStateManager().getProperties()) {
                 if (propertiesToWrite.remove(property)) {
-                    buf.writeIdentifier(Registries.BLOCK.getId(block));
+                    buf.writeIdentifier(Registry.BLOCK.getId(block));
                     buf.writeString(property.getName(), 256);
                     if (propertiesToWrite.isEmpty()) {
                         return;

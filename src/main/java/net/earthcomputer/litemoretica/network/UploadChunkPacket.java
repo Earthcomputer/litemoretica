@@ -10,8 +10,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
 import net.minecraft.state.property.Property;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
@@ -19,8 +17,9 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.world.TickPriority;
 import net.minecraft.world.tick.OrderedTick;
-import net.minecraft.world.tick.TickPriority;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -108,8 +107,8 @@ public class UploadChunkPacket implements PacketSplitter.SplitPacket {
         this.entityMirror2 = buf.readEnumConstant(BlockMirror.class);
         this.entityRotation = buf.readEnumConstant(BlockRotation.class);
 
-        this.scheduledBlockTicks = readOrderedTickList(Registries.BLOCK, buf);
-        this.scheduledFluidTicks = readOrderedTickList(Registries.FLUID, buf);
+        this.scheduledBlockTicks = readOrderedTickList(Registry.BLOCK, buf);
+        this.scheduledFluidTicks = readOrderedTickList(Registry.FLUID, buf);
     }
 
     @Override
@@ -160,14 +159,14 @@ public class UploadChunkPacket implements PacketSplitter.SplitPacket {
         buf.writeEnumConstant(entityMirror2);
         buf.writeEnumConstant(entityRotation);
 
-        buf.writeCollection(scheduledBlockTicks, (buf1, orderedTick) -> writeOrderedTick(Registries.BLOCK, buf1, orderedTick));
-        buf.writeCollection(scheduledFluidTicks, (buf1, orderedTick) -> writeOrderedTick(Registries.FLUID, buf1, orderedTick));
+        buf.writeCollection(scheduledBlockTicks, (buf1, orderedTick) -> writeOrderedTick(Registry.BLOCK, buf1, orderedTick));
+        buf.writeCollection(scheduledFluidTicks, (buf1, orderedTick) -> writeOrderedTick(Registry.FLUID, buf1, orderedTick));
     }
 
     @SuppressWarnings("unchecked")
     private static <T extends Comparable<T>> BlockState readBlockState(PacketByteBuf buf) {
         Identifier blockId = buf.readIdentifier();
-        Block block = Registries.BLOCK.get(blockId);
+        Block block = Registry.BLOCK.get(blockId);
         BlockState state = block.getDefaultState();
         int numProperties = buf.readVarInt();
         for (int i = 0; i < numProperties; i++) {
@@ -188,7 +187,7 @@ public class UploadChunkPacket implements PacketSplitter.SplitPacket {
 
     @SuppressWarnings("unchecked")
     private static <T extends Comparable<T>> void writeBlockState(PacketByteBuf buf, BlockState state) {
-        Identifier blockId = Registries.BLOCK.getId(state.getBlock());
+        Identifier blockId = Registry.BLOCK.getId(state.getBlock());
         buf.writeIdentifier(blockId);
         ImmutableMap<Property<?>, Comparable<?>> entries = state.getEntries();
         buf.writeVarInt(entries.size());
