@@ -24,5 +24,8 @@
   "mixins": [
     "litemoretica.client.mixins.json",
     "litemoretica.server.mixins.json"
-  ]
+  ],
+  "depends": {
+    "minecraft": "${mcversions}"
+  }
 }
