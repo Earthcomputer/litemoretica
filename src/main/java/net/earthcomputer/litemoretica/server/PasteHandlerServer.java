@@ -48,7 +48,7 @@ public final class PasteHandlerServer {
             return;
         }
 
-        ServerWorld world = handler.player.getWorld();
+        ServerWorld world = handler.player.getServerWorld();
 
         BlockBox box = BlockBox.create(packet.minPos, packet.maxPos);
 
