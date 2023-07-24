@@ -56,7 +56,7 @@ public class RayTraceUtilsMixin_ShapeContextFix {
         litemoretica_currentEntity = null;
     }
 
-    @Redirect(method = {"traceFirstStep", "traceLoopSteps"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/block/BlockState;getOutlineShape(Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/util/shape/VoxelShape;", remap = true), require = -1)
+    @Redirect(method = {"traceFirstStep", "traceLoopSteps"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/block/BlockState;getOutlineShape(Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/util/shape/VoxelShape;", remap = true))
     private static VoxelShape redirectGetOutlineShape(BlockState instance, BlockView blockView, BlockPos blockPos) {
         Entity currentEntity;
         if (litemoretica_currentEntity != null && (currentEntity = litemoretica_currentEntity.get()) != null) {
