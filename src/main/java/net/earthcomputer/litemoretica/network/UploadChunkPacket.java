@@ -65,7 +65,7 @@ public class UploadChunkPacket implements PacketSplitter.SplitPacket {
         }
 
         int numBlocks = (Math.abs((maxPos.getX() & 15) - (minPos.getX() & 15)) + 1) * (Math.abs(maxPos.getY() - minPos.getY()) + 1) * (Math.abs((maxPos.getZ() & 15) - (minPos.getZ() & 15)) + 1);
-        int bitsPerBlock = MathHelper.ceilLog2(palette.size());
+        int bitsPerBlock = Math.max(1, MathHelper.ceilLog2(palette.size()));
         int numBits = numBlocks * bitsPerBlock;
         int numLongs = (numBits + 63) >>> 6;
         long[] data = buf.readLongArray(null, numLongs);
@@ -128,7 +128,7 @@ public class UploadChunkPacket implements PacketSplitter.SplitPacket {
         }
 
         buf.writeCollection(palette, UploadChunkPacket::writeBlockState);
-        int bitsPerBlock = MathHelper.ceilLog2(palette.size());
+        int bitsPerBlock = Math.max(1, MathHelper.ceilLog2(palette.size()));
         int numBits = blockData.length * bitsPerBlock;
         long[] data = new long[(numBits + 63) >>> 6];
         for (int blockIndex = 0; blockIndex < blockData.length; blockIndex++) {
