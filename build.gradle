@@ -11,7 +11,7 @@ modrinth {
     token = project.hasProperty('modrinthKey') ? modrinthKey : null
     projectId = 'litemoretica'
     uploadFile = remapJar
-    version = "mc${project.minecraft_version}-${project.version}"
+    version = "${project.version}+mc${project.minecraft_version}"
     gameVersions.set(project.modrinth_compatible_versions.split(',').toList())
     loaders.set(['fabric', 'quilt'])
     def changelogFile = file('changelog.txt')
