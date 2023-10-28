@@ -53,7 +53,7 @@ public final class EasyPlaceProtocolServer {
         Properties.DOOR_HINGE,
         Properties.SLAB_TYPE,
         Properties.STAIR_SHAPE,
-        Properties.WALL_MOUNT_LOCATION,
+        Properties.BLOCK_FACE,
         // IntProperty:
         // BITES - Cake
         // DELAY - Repeater
