@@ -29,6 +29,7 @@ import java.util.List;
 public final class EasyPlaceProtocolServer {
     private static final Logger LOGGER = LogUtils.getLogger();
 
+    // See PlacementHandler.WHITELISTED_PROPERTIES
     private static final ImmutableSet<Property<?>> WHITELISTED_PROPERTIES = ImmutableSet.of(
         // BooleanProperty:
         // INVERTED - DaylightDetector
@@ -45,7 +46,7 @@ public final class EasyPlaceProtocolServer {
         // DOOR_HINGE - Door
         // SLAB_TYPE - Slab - PARTIAL ONLY: TOP and BOTTOM, not DOUBLE
         // STAIR_SHAPE - Stairs (needed to get the correct state, otherwise the player facing would be a factor)
-        // WALL_MOUNT_LOCATION - Button, Grindstone, Lever
+        // BLOCK_FACE - Button, Grindstone, Lever
         Properties.AXIS,
         Properties.BLOCK_HALF,
         Properties.CHEST_TYPE,
@@ -53,7 +54,7 @@ public final class EasyPlaceProtocolServer {
         Properties.DOOR_HINGE,
         Properties.SLAB_TYPE,
         Properties.STAIR_SHAPE,
-        Properties.WALL_MOUNT_LOCATION,
+        Properties.BLOCK_FACE,
         // IntProperty:
         // BITES - Cake
         // DELAY - Repeater
