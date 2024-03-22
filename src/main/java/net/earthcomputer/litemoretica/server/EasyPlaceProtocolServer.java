@@ -81,7 +81,7 @@ public final class EasyPlaceProtocolServer {
         ServerPlayNetworking.registerGlobalReceiver(SetEasyPlaceProtocolPacket.TYPE, (server, player, handler, buf, responseSender) -> {
             SetEasyPlaceProtocolPacket packet = new SetEasyPlaceProtocolPacket(buf);
             player.server.execute(() -> {
-                LOGGER.info("Player {} is using easy place protocol {}", player.getEntityName(), packet.protocol());
+                LOGGER.info("Player {} is using easy place protocol {}", player.getNameForScoreboard(), packet.protocol());
                 ((NetworkHandlerExt) player.networkHandler).litemoretica_setEasyPlaceProtocol(packet.protocol());
             });
         });

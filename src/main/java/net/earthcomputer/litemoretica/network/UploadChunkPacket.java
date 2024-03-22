@@ -3,8 +3,8 @@ package net.earthcomputer.litemoretica.network;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.netty.handler.codec.DecoderException;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenCustomHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2IntMap;
+import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.fluid.Fluid;
@@ -16,7 +16,6 @@ import net.minecraft.state.property.Property;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.tick.OrderedTick;
@@ -119,7 +118,7 @@ public class UploadChunkPacket implements PacketSplitter.SplitPacket {
         buf.writeBlockPos(maxPos);
 
         List<BlockState> palette = new ArrayList<>();
-        Object2IntMap<BlockState> paletteIndexes = new Object2IntOpenCustomHashMap<>(Util.identityHashStrategy());
+        Reference2IntMap<BlockState> paletteIndexes = new Reference2IntOpenHashMap<>();
         for (BlockState state : blockData) {
             paletteIndexes.computeIfAbsent(state, k -> {
                 int index = palette.size();
