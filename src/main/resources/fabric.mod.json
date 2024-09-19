@@ -26,6 +26,7 @@
     "litemoretica.server.mixins.json"
   ],
   "depends": {
-    "minecraft": "${mcversions}"
+    "minecraft": "${mcversions}",
+    "fabricloader": ">=0.15.0"
   }
 }
