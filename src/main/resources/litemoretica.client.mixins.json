@@ -4,12 +4,14 @@
   "package": "net.earthcomputer.litemoretica.mixin.client",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "ConfigsGenericMixin",
     "HotkeysMixin",
     "PlacementHandlerAccessor",
     "PlacementHandlerMixin_EasyPlaceProtocol",
     "RayTraceUtilsMixin_ShapeContextFix",
     "SchematicPlacementManagerMixin_PasteHandler",
     "SchematicUtilsAccessor",
+    "TaskCountBlocksPlacementMixin_MaterialListFeature",
     "WorldUtilsAccessor",
     "WorldUtilsMixin_EasyPlaceFix"
   ],
