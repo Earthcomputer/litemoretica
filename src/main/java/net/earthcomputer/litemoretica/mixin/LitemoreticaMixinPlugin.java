@@ -3,7 +3,6 @@ package net.earthcomputer.litemoretica.mixin;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.Version;
-import net.fabricmc.loader.api.VersionParsingException;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
@@ -16,15 +15,6 @@ public class LitemoreticaMixinPlugin implements IMixinConfigPlugin {
     private boolean enabled;
     @Nullable
     private Version litematicaVersion;
-
-    private static final Version V0_15_3;
-    static {
-        try {
-            V0_15_3 = Version.parse("0.15.3");
-        } catch (VersionParsingException e) {
-            throw new AssertionError(e);
-        }
-    }
 
     @Override
     public void onLoad(String mixinPackage) {
