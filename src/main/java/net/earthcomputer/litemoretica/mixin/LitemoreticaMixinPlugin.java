@@ -57,12 +57,6 @@ public class LitemoreticaMixinPlugin implements IMixinConfigPlugin {
             return false;
         }
 
-        if ("net.earthcomputer.litemoretica.mixin.client.RayTraceUtilsMixin_ShapeContextFix".equals(mixinClassName)
-            && litematicaVersion != null
-            && litematicaVersion.compareTo(V0_15_3) >= 0) {
-            return false;
-        }
-
         return true;
     }
 

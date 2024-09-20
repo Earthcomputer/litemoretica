@@ -8,7 +8,6 @@
     "HotkeysMixin",
     "PlacementHandlerAccessor",
     "PlacementHandlerMixin_EasyPlaceProtocol",
-    "RayTraceUtilsMixin_ShapeContextFix",
     "SchematicPlacementManagerMixin_PasteHandler",
     "SchematicUtilsAccessor",
     "TaskCountBlocksPlacementMixin_MaterialListFeature",
