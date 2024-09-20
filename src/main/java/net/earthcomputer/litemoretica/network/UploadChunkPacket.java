@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public class UploadChunkPacket implements CustomPayload {
-    public static final Id<UploadChunkPacket> ID = new Id<>(new Identifier("litemoretica", "upload_chunk"));
+    public static final Id<UploadChunkPacket> ID = new Id<>(Identifier.of("litemoretica", "upload_chunk"));
     public static final PacketCodec<RegistryByteBuf, UploadChunkPacket> CODEC = PacketCodec.of(UploadChunkPacket::write, UploadChunkPacket::new);
 
     public final ReplaceBehavior replaceBehavior;

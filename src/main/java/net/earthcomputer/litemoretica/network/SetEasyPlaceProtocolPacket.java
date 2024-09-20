@@ -7,7 +7,7 @@ import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
 
 public record SetEasyPlaceProtocolPacket(int protocol) implements CustomPayload {
-    public static final Id<SetEasyPlaceProtocolPacket> ID = new Id<>(new Identifier("litemoretica", "set_easy_place_protocol"));
+    public static final Id<SetEasyPlaceProtocolPacket> ID = new Id<>(Identifier.of("litemoretica", "set_easy_place_protocol"));
     public static final PacketCodec<RegistryByteBuf, SetEasyPlaceProtocolPacket> CODEC = PacketCodec.of(SetEasyPlaceProtocolPacket::write, SetEasyPlaceProtocolPacket::new);
 
     private SetEasyPlaceProtocolPacket(PacketByteBuf buf) {

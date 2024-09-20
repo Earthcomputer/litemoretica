@@ -14,7 +14,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public record InitEasyPlaceProtocolPacket(ImmutableSet<Property<?>> whitelistedProperties) implements CustomPayload {
-    public static final Id<InitEasyPlaceProtocolPacket> ID = new Id<>(new Identifier("litemoretica", "init_easy_place"));
+    public static final Id<InitEasyPlaceProtocolPacket> ID = new Id<>(Identifier.of("litemoretica", "init_easy_place"));
     public static final PacketCodec<RegistryByteBuf, InitEasyPlaceProtocolPacket> CODEC = PacketCodec.of(InitEasyPlaceProtocolPacket::write, InitEasyPlaceProtocolPacket::new);
 
     private InitEasyPlaceProtocolPacket(PacketByteBuf buf) {
