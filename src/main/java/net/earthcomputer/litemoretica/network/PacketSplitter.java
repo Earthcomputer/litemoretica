@@ -2,101 +2,147 @@ package net.earthcomputer.litemoretica.network;
 
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.codec.PacketCodecs;
+import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 public final class PacketSplitter {
+    private static final Map<Identifier, PacketCodec<RegistryByteBuf, ?>> CODECS = new HashMap<>();
+
     @Nullable
-    private Identifier currentlyReceiving;
-    private int partsLeftToReceive;
-    private PacketByteBuf currentBuf;
+    private CustomPayload.Id<?> currentlyReceiving;
+    private RegistryByteBuf currentBuf;
 
-    public static <T extends SplitPacket> void registerC2S(SplitPacketType<T> type, BiConsumer<T, ServerPlayNetworkHandler> handler) {
-        ServerPlayNetworking.registerGlobalReceiver(type.id, (server, player, handler1, buf, responseSender) -> {
-            ((NetHandlerExt) handler1).litemoretica_getPacketSplitter().handle(buf, type, packet -> handler.accept(packet, handler1), handler1::disconnect);
+    public static <T extends CustomPayload> void register(CustomPayload.Id<T> id, PacketCodec<RegistryByteBuf, T> codec) {
+        CODECS.put(id.id(), codec);
+    }
+
+    public static <T extends CustomPayload> void registerC2S(CustomPayload.Id<T> id, BiConsumer<T, ServerPlayNetworking.Context> handler) {
+        @SuppressWarnings("unchecked")
+        var codec = (PacketCodec<RegistryByteBuf, T>) CODECS.get(id.id());
+        if (codec == null) {
+            throw new IllegalStateException("Registering C2S listener without registering the packet: " + id.id());
+        }
+
+        @SuppressWarnings("unchecked")
+        var splitPacketId = (CustomPayload.Id<SplitPacket>) id;
+        PayloadTypeRegistry.playC2S().register(splitPacketId, SplitPacket.codec(splitPacketId));
+        ServerPlayNetworking.registerGlobalReceiver(splitPacketId, (splitPayload, context) -> {
+            ((NetHandlerExt) context.player().networkHandler).litemoretica_getPacketSplitter().handle(splitPayload, context.player().getRegistryManager(), codec, packet -> handler.accept(packet, context));
         });
     }
 
-    public static <T extends SplitPacket> void registerS2C(SplitPacketType<T> type, Consumer<T> handler) {
-        ClientPlayNetworking.registerGlobalReceiver(type.id, (client, handler1, buf, responseSender) -> {
-            ((NetHandlerExt) handler1).litemoretica_getPacketSplitter().handle(buf, type, handler, handler1.getConnection()::disconnect);
+    public static <T extends CustomPayload> void registerS2C(CustomPayload.Id<T> id, BiConsumer<T, ClientPlayNetworking.Context> handler) {
+        @SuppressWarnings("unchecked")
+        var codec = (PacketCodec<RegistryByteBuf, T>) CODECS.get(id.id());
+        if (codec == null) {
+            throw new IllegalStateException("Registering S2C listener without registering the packet: " + id.id());
+        }
+
+        @SuppressWarnings("unchecked")
+        var splitPacketId = (CustomPayload.Id<SplitPacket>) id;
+        PayloadTypeRegistry.playS2C().register(splitPacketId, SplitPacket.codec(splitPacketId));
+        ClientPlayNetworking.registerGlobalReceiver(splitPacketId, (splitPayload, context) -> {
+            ((NetHandlerExt) context.player().networkHandler).litemoretica_getPacketSplitter().handle(splitPayload, context.player().getRegistryManager(), codec, packet -> handler.accept(packet, context));
         });
     }
 
-    public static void sendToServer(SplitPacket packet) {
-        send(packet, Short.MAX_VALUE, ClientPlayNetworking::send);
+    public static void sendToServer(CustomPayload packet) {
+        ClientPlayerEntity player = MinecraftClient.getInstance().player;
+        assert player != null;
+        send(packet, player.getRegistryManager(), Short.MAX_VALUE, ClientPlayNetworking::send);
     }
 
-    public static void sendToClient(ServerPlayerEntity player, SplitPacket packet) {
-        send(packet, 1048576, (id, buf) -> ServerPlayNetworking.send(player, id, buf));
+    public static void sendToClient(ServerPlayerEntity player, CustomPayload packet) {
+        send(packet, player.getRegistryManager(), 1048576, splitPayload -> ServerPlayNetworking.send(player, splitPayload));
     }
 
-    private static void send(SplitPacket packet, int batchSize, BiConsumer<Identifier, PacketByteBuf> sender) {
-        PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+    private static <T extends CustomPayload> void send(T packet, DynamicRegistryManager registryManager, int batchSize, Consumer<SplitPacket> sender) {
+        @SuppressWarnings("unchecked")
+        var codec = (PacketCodec<RegistryByteBuf, T>) CODECS.get(packet.getId().id());
+        if (codec == null) {
+            throw new IllegalStateException("Sending unregistered split packet: " + packet.getId().id());
+        }
+        @SuppressWarnings("unchecked")
+        var splitPacketId = (CustomPayload.Id<SplitPacket>) packet.getId();
+
+        int bytesPerPacket = batchSize - (
+            1 // isLast
+            + 5 // length of payload
+        );
+
+        RegistryByteBuf buf = new RegistryByteBuf(Unpooled.buffer(), registryManager);
         try {
-            packet.write(buf);
-            int numPackets = MathHelper.ceilDiv(buf.writerIndex() + 5, batchSize);
+            codec.encode(buf, packet);
 
-            PacketByteBuf buf2 = new PacketByteBuf(Unpooled.buffer());
-            buf2.writeVarInt(numPackets);
-            buf2.writeBytes(buf, Math.min(buf.readableBytes(), batchSize - 5));
-            sender.accept(packet.getType().id, buf2);
-            while (buf.isReadable()) {
-                buf2 = new PacketByteBuf(Unpooled.buffer());
-                buf2.writeBytes(buf, Math.min(buf.readableBytes(), batchSize));
-                sender.accept(packet.getType().id, buf2);
+            while (buf.readableBytes() > bytesPerPacket) {
+                byte[] splitPayload = new byte[bytesPerPacket];
+                buf.readBytes(splitPayload);
+                sender.accept(new SplitPacket(splitPacketId, false, splitPayload));
             }
+
+            byte[] splitPayload = new byte[buf.readableBytes()];
+            buf.readBytes(splitPayload);
+            sender.accept(new SplitPacket(splitPacketId, true, splitPayload));
         } finally {
             buf.release();
         }
     }
 
-    public <T extends SplitPacket> void handle(PacketByteBuf buf, SplitPacketType<T> type, Consumer<T> handler, Consumer<Text> disconnecter) {
+    private <T extends CustomPayload> void handle(SplitPacket splitPacket, DynamicRegistryManager registryManager, PacketCodec<RegistryByteBuf, T> codec, Consumer<T> handler) {
+        if (currentlyReceiving != null && currentlyReceiving != splitPacket.id) {
+            currentBuf.release();
+            currentlyReceiving = null;
+            currentBuf = null;
+        }
+
         if (currentlyReceiving == null) {
-            partsLeftToReceive = buf.readVarInt() - 1;
-            if (partsLeftToReceive == 0) {
-                handler.accept(type.deserializer.apply(buf));
-            } else {
-                currentBuf = new PacketByteBuf(Unpooled.buffer());
-                currentBuf.writeBytes(buf);
-                currentlyReceiving = type.id;
-            }
-        } else {
-            if (!currentlyReceiving.equals(type.id)) {
-                disconnecter.accept(Text.literal("Invalid split packet"));
-            }
-            currentBuf.writeBytes(buf);
-            if (--partsLeftToReceive == 0) {
-                try {
-                    handler.accept(type.deserializer.apply(currentBuf));
-                } finally {
-                    currentlyReceiving = null;
-                    currentBuf.release();
-                    currentBuf = null;
-                }
+            currentlyReceiving = splitPacket.id;
+            currentBuf = new RegistryByteBuf(Unpooled.buffer(), registryManager);
+        }
+
+        currentBuf.writeBytes(splitPacket.payload);
+
+        if (splitPacket.isLast) {
+            try {
+                T packet = codec.decode(currentBuf);
+                handler.accept(packet);
+            } finally {
+                currentBuf.release();
+                currentlyReceiving = null;
+                currentBuf = null;
             }
         }
     }
 
-    // TODO: remove in 1.20 (replaced with FabricPacket)
-    public interface SplitPacket {
-        void write(PacketByteBuf buf);
-        SplitPacketType<?> getType();
-    }
+    private record SplitPacket(Id<SplitPacket> id, boolean isLast, byte[] payload) implements CustomPayload {
+        public static PacketCodec<RegistryByteBuf, SplitPacket> codec(Id<SplitPacket> id) {
+            return PacketCodec.tuple(
+                PacketCodecs.BOOL,
+                SplitPacket::isLast,
+                PacketCodecs.BYTE_ARRAY,
+                SplitPacket::payload,
+                (isLast, payload) -> new SplitPacket(id, isLast, payload)
+            );
+        }
 
-    public record SplitPacketType<T extends SplitPacket>(Identifier id, Function<PacketByteBuf, T> deserializer) {
-        public static <T extends SplitPacket> SplitPacketType<T> create(Identifier id, Function<PacketByteBuf, T> deserializer) {
-            return new SplitPacketType<>(id, deserializer);
+        @Override
+        public Id<? extends CustomPayload> getId() {
+            return id;
         }
     }
 

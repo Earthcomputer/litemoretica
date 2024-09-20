@@ -11,7 +11,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
@@ -25,20 +25,19 @@ public final class PasteHandlerServer {
     }
 
     public static void init() {
-        PacketSplitter.registerC2S(UploadChunkPacket.TYPE, (packet, handler) -> {
-            handler.player.server.execute(() -> {
-                CarpetCompat.onFillUpdatesSkipStart();
-                try {
-                    handleChunkUpload(packet, handler);
-                } finally {
-                    CarpetCompat.onFillUpdatesSkipEnd();
-                }
-            });
+        PacketSplitter.register(UploadChunkPacket.ID, UploadChunkPacket.CODEC);
+        PacketSplitter.registerC2S(UploadChunkPacket.ID, (packet, context) -> {
+            CarpetCompat.onFillUpdatesSkipStart();
+            try {
+                handleChunkUpload(packet, context.player());
+            } finally {
+                CarpetCompat.onFillUpdatesSkipEnd();
+            }
         });
     }
 
-    private static void handleChunkUpload(UploadChunkPacket packet, ServerPlayNetworkHandler handler) {
-        if (!handler.player.isCreative()) {
+    private static void handleChunkUpload(UploadChunkPacket packet, ServerPlayerEntity player) {
+        if (!player.isCreative()) {
             return;
         }
 
@@ -48,7 +47,7 @@ public final class PasteHandlerServer {
             return;
         }
 
-        ServerWorld world = handler.player.getServerWorld();
+        ServerWorld world = player.getServerWorld();
 
         BlockBox box = BlockBox.create(packet.minPos, packet.maxPos);
 
@@ -84,7 +83,7 @@ public final class PasteHandlerServer {
 
             BlockEntity be = world.getBlockEntity(pos.set(x, y, z));
             if (be != null) {
-                be.readNbt(blockEntity);
+                be.read(blockEntity, player.getRegistryManager());
             }
         }
 

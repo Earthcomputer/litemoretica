@@ -2,16 +2,15 @@ package net.earthcomputer.litemoretica.server;
 
 import com.google.common.collect.ImmutableSet;
 import com.mojang.logging.LogUtils;
-import io.netty.buffer.Unpooled;
 import net.earthcomputer.litemoretica.network.InitEasyPlaceProtocolPacket;
 import net.earthcomputer.litemoretica.network.SetEasyPlaceProtocolPacket;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.BedBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.enums.SlabType;
 import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.state.property.Properties;
@@ -70,20 +69,17 @@ public final class EasyPlaceProtocolServer {
     }
 
     public static void init() {
+        PayloadTypeRegistry.playS2C().register(InitEasyPlaceProtocolPacket.ID, InitEasyPlaceProtocolPacket.CODEC);
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
-            if (ServerPlayNetworking.canSend(handler, InitEasyPlaceProtocolPacket.TYPE)) {
-                // TODO: convert these packets to new API in 1.20
-                PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-                new InitEasyPlaceProtocolPacket(WHITELISTED_PROPERTIES).write(buf);
-                sender.sendPacket(InitEasyPlaceProtocolPacket.TYPE, buf);
+            if (ServerPlayNetworking.canSend(handler, InitEasyPlaceProtocolPacket.ID)) {
+                sender.sendPacket(new InitEasyPlaceProtocolPacket(WHITELISTED_PROPERTIES));
             }
         });
-        ServerPlayNetworking.registerGlobalReceiver(SetEasyPlaceProtocolPacket.TYPE, (server, player, handler, buf, responseSender) -> {
-            SetEasyPlaceProtocolPacket packet = new SetEasyPlaceProtocolPacket(buf);
-            player.server.execute(() -> {
-                LOGGER.info("Player {} is using easy place protocol {}", player.getNameForScoreboard(), packet.protocol());
-                ((NetworkHandlerExt) player.networkHandler).litemoretica_setEasyPlaceProtocol(packet.protocol());
-            });
+
+        PayloadTypeRegistry.playC2S().register(SetEasyPlaceProtocolPacket.ID, SetEasyPlaceProtocolPacket.CODEC);
+        ServerPlayNetworking.registerGlobalReceiver(SetEasyPlaceProtocolPacket.ID, (packet, context) -> {
+            LOGGER.info("Player {} is using easy place protocol {}", context.player().getNameForScoreboard(), packet.protocol());
+            ((NetworkHandlerExt) context.player().networkHandler).litemoretica_setEasyPlaceProtocol(packet.protocol());
         });
     }
 

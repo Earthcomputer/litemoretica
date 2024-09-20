@@ -1,7 +1,6 @@
 package net.earthcomputer.litemoretica.network;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import io.netty.handler.codec.DecoderException;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
@@ -10,6 +9,9 @@ import net.minecraft.block.BlockState;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.state.property.Property;
@@ -23,10 +25,12 @@ import net.minecraft.world.tick.TickPriority;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
-public class UploadChunkPacket implements PacketSplitter.SplitPacket {
-    public static final PacketSplitter.SplitPacketType<UploadChunkPacket> TYPE = PacketSplitter.SplitPacketType.create(new Identifier("litemoretica", "upload_chunk"), UploadChunkPacket::new);
+public class UploadChunkPacket implements CustomPayload {
+    public static final Id<UploadChunkPacket> ID = new Id<>(new Identifier("litemoretica", "upload_chunk"));
+    public static final PacketCodec<RegistryByteBuf, UploadChunkPacket> CODEC = PacketCodec.of(UploadChunkPacket::write, UploadChunkPacket::new);
 
     public final ReplaceBehavior replaceBehavior;
     public final BlockPos minPos;
@@ -54,7 +58,7 @@ public class UploadChunkPacket implements PacketSplitter.SplitPacket {
         this.scheduledFluidTicks = ImmutableList.copyOf(scheduledFluidTicks);
     }
 
-    public UploadChunkPacket(PacketByteBuf buf) {
+    private UploadChunkPacket(PacketByteBuf buf) {
         this.replaceBehavior = buf.readEnumConstant(ReplaceBehavior.class);
         this.minPos = buf.readBlockPos();
         this.maxPos = buf.readBlockPos();
@@ -111,8 +115,7 @@ public class UploadChunkPacket implements PacketSplitter.SplitPacket {
         this.scheduledFluidTicks = readOrderedTickList(Registries.FLUID, buf);
     }
 
-    @Override
-    public void write(PacketByteBuf buf) {
+    private void write(PacketByteBuf buf) {
         buf.writeEnumConstant(replaceBehavior);
         buf.writeBlockPos(minPos);
         buf.writeBlockPos(maxPos);
@@ -189,7 +192,7 @@ public class UploadChunkPacket implements PacketSplitter.SplitPacket {
     private static <T extends Comparable<T>> void writeBlockState(PacketByteBuf buf, BlockState state) {
         Identifier blockId = Registries.BLOCK.getId(state.getBlock());
         buf.writeIdentifier(blockId);
-        ImmutableMap<Property<?>, Comparable<?>> entries = state.getEntries();
+        Map<Property<?>, Comparable<?>> entries = state.getEntries();
         buf.writeVarInt(entries.size());
         entries.forEach((p, v) -> {
             Property<T> property = (Property<T>) p;
@@ -227,8 +230,8 @@ public class UploadChunkPacket implements PacketSplitter.SplitPacket {
     }
 
     @Override
-    public PacketSplitter.SplitPacketType<?> getType() {
-        return TYPE;
+    public Id<? extends CustomPayload> getId() {
+        return ID;
     }
 
     public enum ReplaceBehavior {

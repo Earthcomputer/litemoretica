@@ -38,7 +38,7 @@ public class PasteHandlerClient extends TaskPasteSchematicPerChunkBase {
     }
 
     public static boolean canRun() {
-        return LitemoreticaClient.HAS_NETWORKING && ClientPlayNetworking.canSend(UploadChunkPacket.TYPE.id());
+        return LitemoreticaClient.HAS_NETWORKING && ClientPlayNetworking.canSend(UploadChunkPacket.ID.id());
     }
 
     @Override

@@ -3,6 +3,9 @@ package net.earthcomputer.litemoretica.network;
 import com.google.common.collect.ImmutableSet;
 import net.minecraft.block.Block;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.registry.Registries;
 import net.minecraft.state.property.Property;
 import net.minecraft.util.Identifier;
@@ -10,14 +13,15 @@ import net.minecraft.util.Identifier;
 import java.util.HashSet;
 import java.util.Set;
 
-public record InitEasyPlaceProtocolPacket(ImmutableSet<Property<?>> whitelistedProperties) {
-    public static final Identifier TYPE = new Identifier("litemoretica", "init_easy_place");
+public record InitEasyPlaceProtocolPacket(ImmutableSet<Property<?>> whitelistedProperties) implements CustomPayload {
+    public static final Id<InitEasyPlaceProtocolPacket> ID = new Id<>(new Identifier("litemoretica", "init_easy_place"));
+    public static final PacketCodec<RegistryByteBuf, InitEasyPlaceProtocolPacket> CODEC = PacketCodec.of(InitEasyPlaceProtocolPacket::write, InitEasyPlaceProtocolPacket::new);
 
-    public InitEasyPlaceProtocolPacket(PacketByteBuf buf) {
+    private InitEasyPlaceProtocolPacket(PacketByteBuf buf) {
         this(readWhitelistedProperties(buf));
     }
 
-    public void write(PacketByteBuf buf) {
+    private void write(PacketByteBuf buf) {
         writeWhitelistedProperties(buf, whitelistedProperties);
     }
 
@@ -51,5 +55,10 @@ public record InitEasyPlaceProtocolPacket(ImmutableSet<Property<?>> whitelistedP
             }
         }
         throw new IllegalStateException("Found properties with no block containing them: " + propertiesToWrite);
+    }
+
+    @Override
+    public Id<? extends CustomPayload> getId() {
+        return ID;
     }
 }
